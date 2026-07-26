@@ -1,64 +1,28 @@
-# AetherCare — Healthcare Deep Memory Agents
+# Cadence
 
-**Pure Python** vertical agents for healthcare with multi-layer deep memory.
+**Deep-memory vertical agents for healthcare** — pure Python, fully local, zero agentic frameworks.
 
-- Zero agentic frameworks (no LangChain, CrewAI, AutoGen, Mem0…)
-- Fully local & free (Ollama + SQLite + sentence-transformers)
-- Privacy-first: data never leaves your machine
-- Modern minimalist UI with light/dark mode, parallax & water-drop interactions
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Ollama](https://img.shields.io/badge/LLM-Ollama-black.svg)](https://ollama.com)
+[![UI](https://img.shields.io/badge/UI-Vercel-black.svg)](https://cadence-devtechedge1.vercel.app)
+[![Release](https://img.shields.io/badge/release-v0.1.0-brightgreen.svg)](https://github.com/devtechedge/healthcare-deep-memory-agents/releases)
 
 > **Disclaimer**: Educational / research prototype only. Never use for real medical decisions. Always consult qualified clinicians.
 
----
-
-## Live Frontend
-
-Modern UI lives in `/web`:
-
-- Minimalist + futuristic design
-- Light / Dark mode toggle (persisted)
-- Smooth parallax scroll
-- Water-drop press feel on buttons (scale + ripple)
-- Interactive demo chat (simulated replies for static hosting)
-
-### Deploy options
-
-#### Option A — GitHub Pages (static, free)
-1. Go to repo **Settings → Pages**
-2. Source: Deploy from a branch
-3. Branch: `main` → folder `/web` (or root if you prefer)
-4. Save. Site will be at `https://devtechedge.github.io/healthcare-deep-memory-agents/`
-
-> Note: GitHub Pages serves the beautiful frontend + demo. Full agent memory requires the local Python backend.
-
-#### Option B — Vercel (recommended for smoother DX)
-```bash
-npm i -g vercel
-cd web
-vercel
-```
-Or connect the repo in the Vercel dashboard and set **Root Directory** to `web`.
-
-Vercel handles the static UI perfectly and makes future API routes easy if you later add a small backend.
+**Live UI:** [cadence-devtechedge1.vercel.app](https://cadence-devtechedge1.vercel.app)
 
 ---
 
-## Architecture
+## What it is
 
-### Memory Layers
-1. **Session / Working** – recent turns
-2. **Episodic** – timestamped events, symptoms, visits
-3. **Semantic** – vector long-term facts (allergies, meds, history)
-4. **Knowledge** – local RAG over guidelines
-5. **Insights** – synthesized patterns (human-verified)
+Vertical AI agents that remember — symptoms, history, preferences — across sessions.
 
-### Vertical Agents
-- TriageAgent
-- MedicationSafetyAgent
-- ChronicCare / SymptomTracker
-- HistorySummarizer
-- GuidelineRetriever
-- Orchestrator
+- Multi-layer deep memory (session · episodic · semantic · knowledge · insights)
+- Pure Python only (no LangChain, CrewAI, AutoGen, Mem0…)
+- Fully local & free (Ollama + SQLite + sentence-transformers)
+- Privacy-first: data never leaves your machine
+- Minimalist futuristic UI (light/dark, parallax, water-drop interactions)
 
 ---
 
@@ -81,36 +45,66 @@ Memory is stored in `data/` and survives restarts.
 
 ---
 
+## Architecture
+
+### Memory Layers
+1. **Session / Working** – recent turns  
+2. **Episodic** – timestamped events, symptoms, visits  
+3. **Semantic** – vector long-term facts  
+4. **Knowledge** – local RAG over guidelines  
+5. **Insights** – synthesized patterns (human-verified)
+
+### Vertical Agents
+- Triage
+- Medication Safety
+- Chronic Care
+- History Summarizer
+- Guideline Retriever
+- Orchestrator
+
+---
+
 ## Project Structure
 
 ```
 healthcare-deep-memory-agents/
 ├── README.md
 ├── requirements.txt
-├── .gitignore
 ├── run_agent.py
 ├── src/
 │   ├── memory/deep_memory.py
 │   └── agents/base_agent.py
-├── web/                     ← modern UI (GitHub Pages / Vercel)
+├── web/                     # Cadence UI
 │   ├── index.html
 │   ├── styles.css
-│   └── app.js
-├── data/                    ← local DB (gitignored)
-└── knowledge/               ← drop free guidelines here
+│   ├── app.js
+│   └── favicon.svg
+├── data/                    # local DB (gitignored)
+└── knowledge/
 ```
+
+---
+
+## Releases
+
+### v0.1.0 — Initial public release
+- Core `DeepMemory` (SQLite + vector semantic layer)
+- Base `HealthcareAgent` (Ollama)
+- Interactive CLI runner
+- Cadence web UI (minimalist, light/dark, parallax, water-drop)
+- Deployed frontend on Vercel
 
 ---
 
 ## Roadmap
 
-- [x] Core DeepMemory (SQLite + vectors)
+- [x] Core DeepMemory
 - [x] Base HealthcareAgent
-- [x] Modern frontend (light/dark, parallax, water-drop)
+- [x] Cadence frontend
 - [ ] Multi-agent Orchestrator
-- [ ] FastAPI bridge so UI talks to real local agent
+- [ ] FastAPI bridge (UI ↔ local agent)
 - [ ] Medication safety tools
-- [ ] Insight consolidator + verification
+- [ ] Insight consolidator
 - [ ] Knowledge RAG loader
 
 ---
