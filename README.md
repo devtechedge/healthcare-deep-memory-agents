@@ -22,11 +22,11 @@ Vertical AI agents that remember — symptoms, history, preferences — across s
 - Pure Python only (no LangChain, CrewAI, AutoGen, Mem0…)
 - Fully local & free (Ollama + SQLite + sentence-transformers)
 - Privacy-first: data never leaves your machine
-- Minimalist futuristic UI (light/dark, parallax, water-drop interactions)
+- **Patient journey first**: Baseline → Triage → Visit Prep → Care → Pattern → Recovery
 
 ---
 
-## Quick Start (Local Agent)
+## Quick Start
 
 ```bash
 # 1. Ollama
@@ -37,11 +37,37 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-# 3. Run CLI agent
+# 3a. Patient journey (recommended)
+python run_patient.py
+
+# 3b. Single triage agent
 python run_agent.py
 ```
 
-Memory is stored in `data/` and survives restarts.
+Force a stage:
+
+```bash
+python run_patient.py --stage VISIT_PREP
+```
+
+In-session: type `/stage CARE` to switch.
+
+Memory lives in `data/` and survives restarts.
+
+---
+
+## Patient journey stages
+
+| Stage | Agent | Role |
+|-------|-------|------|
+| BASELINE | Baseline | Profile, allergies, meds, goals |
+| TRIAGE | Triage | Symptom structure + cautious red flags |
+| VISIT_PREP | VisitPrep | Questions + brief for the clinician visit |
+| CARE | CareCompanion | Adherence, side effects, care-plan tasks |
+| PATTERN | Pattern | Hypothesis correlations from memory |
+| RECOVERY | Recovery | Milestones and “what better looks like” |
+
+Spec: [`docs/PATIENT_JOURNEY.md`](docs/PATIENT_JOURNEY.md)
 
 ---
 
@@ -54,45 +80,23 @@ Memory is stored in `data/` and survives restarts.
 4. **Knowledge** – local RAG over guidelines  
 5. **Insights** – synthesized patterns (human-verified)
 
-### Vertical Agents
-- Triage
-- Medication Safety
-- Chronic Care
-- History Summarizer
-- Guideline Retriever
-- Orchestrator
-
 ---
 
 ## Project Structure
 
 ```
 healthcare-deep-memory-agents/
-├── README.md
-├── requirements.txt
-├── run_agent.py
+├── docs/PATIENT_JOURNEY.md
+├── run_patient.py           ← patient journey CLI
+├── run_agent.py             ← single agent CLI
 ├── src/
 │   ├── memory/deep_memory.py
-│   └── agents/base_agent.py
-├── web/                     # Cadence UI
-│   ├── index.html
-│   ├── styles.css
-│   ├── app.js
-│   └── favicon.svg
-├── data/                    # local DB (gitignored)
-└── knowledge/
+│   └── agents/
+│       ├── base_agent.py
+│       └── patient_agents.py
+├── web/                     ← Cadence UI
+└── data/                    ← local DB (gitignored)
 ```
-
----
-
-## Releases
-
-### v0.1.0 — Initial public release
-- Core `DeepMemory` (SQLite + vector semantic layer)
-- Base `HealthcareAgent` (Ollama)
-- Interactive CLI runner
-- Cadence web UI (minimalist, light/dark, parallax, water-drop)
-- Deployed frontend on Vercel
 
 ---
 
@@ -101,9 +105,11 @@ healthcare-deep-memory-agents/
 - [x] Core DeepMemory
 - [x] Base HealthcareAgent
 - [x] Cadence frontend
-- [ ] Multi-agent Orchestrator
+- [x] Patient journey agents + orchestrator
+- [ ] Patient web surfaces (timeline, check-in, visit brief)
+- [ ] Structured symptom schema in episodic meta
 - [ ] FastAPI bridge (UI ↔ local agent)
-- [ ] Medication safety tools
+- [ ] Clinician portal (visit brief + notes)
 - [ ] Insight consolidator
 - [ ] Knowledge RAG loader
 
