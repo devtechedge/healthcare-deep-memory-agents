@@ -1,4 +1,4 @@
-/* Cadence — patient journey frontend */
+/* Cadence — patient journey frontend + OpenRouter live demo */
 
 const html = document.documentElement;
 const themeToggle = document.getElementById('theme-toggle');
@@ -55,7 +55,6 @@ window.addEventListener('scroll', function () {
 }, { passive: true });
 updateParallax();
 
-/* ---------- Patient journey ---------- */
 var STAGES = ['BASELINE', 'TRIAGE', 'VISIT_PREP', 'CARE', 'PATTERN', 'RECOVERY'];
 var STAGE_LABEL = {
   BASELINE: 'Baseline',
@@ -67,37 +66,33 @@ var STAGE_LABEL = {
 };
 var currentStage = 'TRIAGE';
 var timeline = [];
+var chatHistory = [];
+var liveMode = true;
 
 var stageReplies = {
   BASELINE: [
-    'Noted for your baseline. I\'ll remember durable facts like allergies, regular meds, and goals so you don\'t re-explain them later.',
-    'Got it. Profile memory updated. You can add more anytime — sleep norms, stress patterns, or what "well" means for you.',
-    'Saved. When you prepare a visit later, these baseline facts will show up in your brief automatically.'
+    'Noted for your baseline. I will remember durable facts like allergies, regular meds, and goals.',
+    'Profile memory updated. You can add more anytime — sleep norms, stress patterns, or goals.'
   ],
   TRIAGE: [
-    'Logged as a symptom event. On a scale of 1–10, how intense is it right now? Any triggers you noticed?',
-    'I\'ve stored this in your timeline. If anything feels sudden or severe (chest pain, trouble breathing, sudden weakness), seek urgent care now.',
-    'Recorded. I\'ll keep this linked to your history so patterns are easier to see over the next days.'
+    'Logged as a symptom event. On a scale of 1–10, how intense is it right now?',
+    'Stored on your timeline. If anything feels sudden or severe, seek urgent care now.'
   ],
   VISIT_PREP: [
-    'Here\'s a draft visit brief from what I remember so far:\n• Recent symptoms on your timeline\n• Questions you may want to ask\n• Goals for the visit\nWant me to refine any section?',
-    'Visit prep ready. Lead with what changed since last time, then your top 2 questions. I can tighten the wording if you like.',
-    'Brief updated. You can read this aloud or share it with your clinician when consent tools are enabled.'
+    'Draft visit brief:\n• Recent symptoms\n• Questions for your clinician\n• Goals for the visit',
+    'Visit prep ready. Lead with what changed since last time, then your top questions.'
   ],
   CARE: [
-    'Logged against your care plan. Side effects and missed doses are stored without judgment — useful for your clinician later.',
-    'Adherence note saved. If a med is hard to stick to, we can note barriers (timing, cost, side effects) for your next visit.',
-    'Care memory updated. Your plan tasks stay here so nothing relies on short-term memory alone.'
+    'Logged against your care plan. Side effects and missed doses are stored without judgment.',
+    'Adherence note saved. Barriers can be noted for your next visit.'
   ],
   PATTERN: [
-    'Hypothesis only: from your recent entries, similar symptoms often appear after disrupted sleep. Does that match what you feel?',
-    'Looking across your timeline, there may be a cluster around stress and afternoon symptoms. Not a diagnosis — just a pattern to discuss.',
-    'I can mark a pattern as "feels true" if you confirm it. Verified patterns help future visit briefs.'
+    'Hypothesis only: similar symptoms may cluster after disrupted sleep. Does that match?',
+    'Possible pattern around stress and afternoon symptoms — not a diagnosis, something to discuss.'
   ],
   RECOVERY: [
-    'Progress noted. Recovery is tracked as milestones, not a single finish line. What feels better this week?',
-    'Logged. If symptoms return or worsen, switch back to Triage and contact your clinician as needed.',
-    'Milestone saved. "Better" is defined by your care plan and how you feel day to day — both matter.'
+    'Progress noted. Recovery is milestones, not a single finish line. What feels better?',
+    'Logged. If symptoms return or worsen, switch back to Triage and contact your clinician.'
   ]
 };
 
@@ -107,6 +102,16 @@ function escapeHtml(str) {
     .replace(/</g, '<')
     .replace(/>/g, '>')
     .replace(/"/g, '"');
+}
+
+function setModeBadge(text, live) {
+  var el = document.getElementById('mode-badge');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'text-[10px] font-mono px-2 py-1 rounded-lg ' +
+    (live
+      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400'
+      : 'bg-slate-100 text-slate-400 dark:bg-slate-800');
 }
 
 function setStage(stage) {
@@ -177,6 +182,28 @@ function routeFromText(text) {
   return currentStage;
 }
 
+function fallbackReply(stage) {
+  var pool = stageReplies[stage] || stageReplies.TRIAGE;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+async function liveReply(stage, message) {
+  var res = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: message,
+      stage: stage,
+      history: chatHistory
+    })
+  });
+  var data = await res.json().catch(function () { return {}; });
+  if (!res.ok || !data.reply) {
+    throw new Error((data && data.error) || 'Live model unavailable');
+  }
+  return data.reply;
+}
+
 document.querySelectorAll('[data-stage]').forEach(function (btn) {
   btn.addEventListener('click', function () {
     setStage(btn.getAttribute('data-stage'));
@@ -185,10 +212,12 @@ document.querySelectorAll('[data-stage]').forEach(function (btn) {
 
 var chatForm = document.getElementById('chat-form');
 var chatInput = document.getElementById('chat-input');
+var sending = false;
 
 if (chatForm) {
-  chatForm.addEventListener('submit', function (e) {
+  chatForm.addEventListener('submit', async function (e) {
     e.preventDefault();
+    if (sending) return;
     var text = (chatInput.value || '').trim();
     if (!text) return;
 
@@ -197,17 +226,39 @@ if (chatForm) {
     appendMessage(text, true);
     chatInput.value = '';
     addTimeline(STAGE_LABEL[stage], text.slice(0, 80));
+    chatHistory.push({ role: 'user', content: text });
 
-    setTimeout(function () {
-      var pool = stageReplies[stage] || stageReplies.TRIAGE;
-      var reply = pool[Math.floor(Math.random() * pool.length)];
+    sending = true;
+    chatInput.disabled = true;
+
+    try {
+      var reply;
+      if (liveMode) {
+        try {
+          reply = await liveReply(stage, text);
+          setModeBadge('live · openrouter', true);
+        } catch (err) {
+          liveMode = false;
+          setModeBadge('demo fallback', false);
+          reply = fallbackReply(stage);
+        }
+      } else {
+        reply = fallbackReply(stage);
+      }
       appendMessage(reply, false, STAGE_LABEL[stage]);
-    }, 600 + Math.random() * 500);
+      chatHistory.push({ role: 'assistant', content: reply });
+      if (chatHistory.length > 16) chatHistory = chatHistory.slice(-16);
+    } finally {
+      sending = false;
+      chatInput.disabled = false;
+      chatInput.focus();
+    }
   });
 }
 
 setStage('TRIAGE');
-addTimeline('System', 'Demo journey started — stages share one memory story');
+setModeBadge('live · openrouter', true);
+addTimeline('System', 'Companion ready — OpenRouter demo when key is set');
 
 if (window.location.hash === '#chat') {
   setTimeout(function () { if (chatInput) chatInput.focus(); }, 400);
