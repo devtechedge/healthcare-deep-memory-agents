@@ -1,11 +1,11 @@
-/* AetherCare frontend logic */
+/* Cadence frontend logic */
 
 // ---------- Theme ----------
 const html = document.documentElement;
 const themeToggle = document.getElementById('theme-toggle');
 
 function getPreferredTheme() {
-  const stored = localStorage.getItem('aether-theme');
+  const stored = localStorage.getItem('cadence-theme');
   if (stored) return stored;
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
@@ -16,7 +16,7 @@ function setTheme(theme) {
   } else {
     html.classList.remove('dark');
   }
-  localStorage.setItem('aether-theme', theme);
+  localStorage.setItem('cadence-theme', theme);
 }
 
 setTheme(getPreferredTheme());
@@ -35,7 +35,6 @@ document.querySelectorAll('.water-btn').forEach(btn => {
     btn.style.setProperty('--x', `${x}%`);
     btn.style.setProperty('--y', `${y}%`);
 
-    // Create ripple element
     const ripple = document.createElement('span');
     ripple.className = 'ripple';
     const size = Math.max(rect.width, rect.height);
@@ -47,7 +46,7 @@ document.querySelectorAll('.water-btn').forEach(btn => {
   });
 });
 
-// ---------- Smooth parallax on scroll ----------
+// ---------- Smooth parallax ----------
 const parallaxEls = document.querySelectorAll('[data-parallax]');
 
 function updateParallax() {
@@ -55,7 +54,6 @@ function updateParallax() {
   parallaxEls.forEach(el => {
     const speed = parseFloat(el.dataset.parallax) || 0.1;
     const rect = el.getBoundingClientRect();
-    // Only move when element is near viewport
     if (rect.bottom > 0 && rect.top < window.innerHeight) {
       const offset = (scrollY - (el.offsetTop - window.innerHeight * 0.5)) * speed * 0.15;
       el.style.transform = `translate3d(0, ${offset}px, 0)`;
@@ -76,7 +74,7 @@ window.addEventListener('scroll', () => {
 
 updateParallax();
 
-// ---------- Demo chat (simulated) ----------
+// ---------- Demo chat ----------
 const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-input');
 const chatMessages = document.getElementById('chat-messages');
@@ -89,32 +87,32 @@ const demoReplies = [
   "Recorded. Your memory now includes this event. You can ask me later to recall symptoms from the past week or month."
 ];
 
-function appendMessage(text, isUser = false) {
-  const wrapper = document.createElement('div');
-  wrapper.className = `flex gap-3 msg-enter ${isUser ? 'justify-end' : ''}`;
-
-  if (isUser) {
-    wrapper.innerHTML = `
-      <div class="bg-gradient-to-br from-aether-500 to-indigo-500 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-[85%]">${escapeHtml(text)}</div>
-      <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0"></div>
-    `;
-  } else {
-    wrapper.innerHTML = `
-      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-aether-400 to-indigo-500 flex-shrink-0"></div>
-      <div class="bg-slate-100 dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-[85%]">${escapeHtml(text)}</div>
-    `;
-  }
-
-  chatMessages.appendChild(wrapper);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
 function escapeHtml(str) {
   return str
     .replace(/&/g, '&')
     .replace(/</g, '<')
     .replace(/>/g, '>')
     .replace(/"/g, '"');
+}
+
+function appendMessage(text, isUser = false) {
+  const wrapper = document.createElement('div');
+  wrapper.className = `flex gap-3 msg-enter ${isUser ? 'justify-end' : ''}`;
+
+  if (isUser) {
+    wrapper.innerHTML = `
+      <div class="bg-gradient-to-br from-cadence-500 to-indigo-500 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-[85%]">${escapeHtml(text)}</div>
+      <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0"></div>
+    `;
+  } else {
+    wrapper.innerHTML = `
+      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cadence-400 to-indigo-500 flex-shrink-0"></div>
+      <div class="bg-slate-100 dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-[85%]">${escapeHtml(text)}</div>
+    `;
+  }
+
+  chatMessages.appendChild(wrapper);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 chatForm?.addEventListener('submit', (e) => {
@@ -125,14 +123,12 @@ chatForm?.addEventListener('submit', (e) => {
   appendMessage(text, true);
   chatInput.value = '';
 
-  // Simulate thinking delay
   setTimeout(() => {
     const reply = demoReplies[Math.floor(Math.random() * demoReplies.length)];
     appendMessage(reply, false);
   }, 700 + Math.random() * 600);
 });
 
-// Focus input on load when near chat
 if (window.location.hash === '#chat') {
   setTimeout(() => chatInput?.focus(), 400);
 }
