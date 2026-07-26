@@ -1,4 +1,4 @@
-/* Cadence — patient journey frontend + OpenRouter live demo */
+/* Cadence — patient journey + consent share + clinician demo */
 
 const html = document.documentElement;
 const themeToggle = document.getElementById('theme-toggle');
@@ -57,43 +57,22 @@ updateParallax();
 
 var STAGES = ['BASELINE', 'TRIAGE', 'VISIT_PREP', 'CARE', 'PATTERN', 'RECOVERY'];
 var STAGE_LABEL = {
-  BASELINE: 'Baseline',
-  TRIAGE: 'Triage',
-  VISIT_PREP: 'Visit Prep',
-  CARE: 'Care',
-  PATTERN: 'Patterns',
-  RECOVERY: 'Recovery'
+  BASELINE: 'Baseline', TRIAGE: 'Triage', VISIT_PREP: 'Visit Prep',
+  CARE: 'Care', PATTERN: 'Patterns', RECOVERY: 'Recovery'
 };
 var currentStage = 'TRIAGE';
 var timeline = [];
 var chatHistory = [];
 var liveMode = true;
+var GRANT_KEY = 'cadence_grants_v1';
 
 var stageReplies = {
-  BASELINE: [
-    'Noted for your baseline. I will remember durable facts like allergies, regular meds, and goals.',
-    'Profile memory updated. You can add more anytime — sleep norms, stress patterns, or goals.'
-  ],
-  TRIAGE: [
-    'Logged as a symptom event. On a scale of 1–10, how intense is it right now?',
-    'Stored on your timeline. If anything feels sudden or severe, seek urgent care now.'
-  ],
-  VISIT_PREP: [
-    'Draft visit brief:\n• Recent symptoms\n• Questions for your clinician\n• Goals for the visit',
-    'Visit prep ready. Lead with what changed since last time, then your top questions.'
-  ],
-  CARE: [
-    'Logged against your care plan. Side effects and missed doses are stored without judgment.',
-    'Adherence note saved. Barriers can be noted for your next visit.'
-  ],
-  PATTERN: [
-    'Hypothesis only: similar symptoms may cluster after disrupted sleep. Does that match?',
-    'Possible pattern around stress and afternoon symptoms — not a diagnosis, something to discuss.'
-  ],
-  RECOVERY: [
-    'Progress noted. Recovery is milestones, not a single finish line. What feels better?',
-    'Logged. If symptoms return or worsen, switch back to Triage and contact your clinician.'
-  ]
+  BASELINE: ['Noted for your baseline. Durable facts like allergies and meds are kept for continuity.', 'Profile updated. Add goals or sleep norms anytime.'],
+  TRIAGE: ['Logged as a symptom event. Severity 1–10? Any triggers?', 'Stored on your timeline. Seek urgent care for sudden severe symptoms.'],
+  VISIT_PREP: ['Visit prep notes saved. Lead with what changed, then top questions.', 'Brief ingredients updated from this session.'],
+  CARE: ['Care note saved without judgment.', 'Adherence / side-effect note stored for your clinician packet.'],
+  PATTERN: ['Hypothesis only — patterns need your confirmation.', 'Possible cluster noted; not a diagnosis.'],
+  RECOVERY: ['Milestone noted. Recovery is stepwise.', 'Logged. Worsening → Triage + clinician.']
 };
 
 function escapeHtml(str) {
@@ -129,15 +108,15 @@ function setStage(stage) {
   if (badge) badge.textContent = STAGE_LABEL[stage];
   var input = document.getElementById('chat-input');
   if (input) {
-    var placeholders = {
-      BASELINE: 'Allergies, meds, goals, sleep norms…',
-      TRIAGE: 'Describe a symptom (onset, severity, triggers)…',
-      VISIT_PREP: 'Prepare my visit / questions for my clinician…',
-      CARE: 'Med taken, side effect, care-plan task…',
+    var ph = {
+      BASELINE: 'Allergies, meds, goals…',
+      TRIAGE: 'Symptom onset, severity, triggers…',
+      VISIT_PREP: 'Questions for my clinician…',
+      CARE: 'Med / side effect / plan task…',
       PATTERN: 'Why does this keep happening?',
-      RECOVERY: 'What feels better / milestone…'
+      RECOVERY: 'What feels better…'
     };
-    input.placeholder = placeholders[stage] || 'Message…';
+    input.placeholder = ph[stage] || 'Message…';
   }
 }
 
@@ -145,7 +124,7 @@ function addTimeline(label, detail) {
   timeline.unshift({ t: new Date().toLocaleString(), label: label, detail: detail });
   var list = document.getElementById('timeline-list');
   if (!list) return;
-  list.innerHTML = timeline.slice(0, 12).map(function (item) {
+  list.innerHTML = timeline.slice(0, 16).map(function (item) {
     return '<div class="py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">' +
       '<div class="text-[10px] uppercase tracking-wide text-cadence-600 dark:text-cadence-400 font-medium">' + escapeHtml(item.label) + '</div>' +
       '<div class="text-sm text-slate-700 dark:text-slate-300">' + escapeHtml(item.detail) + '</div>' +
@@ -191,23 +170,15 @@ async function liveReply(stage, message) {
   var res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message: message,
-      stage: stage,
-      history: chatHistory
-    })
+    body: JSON.stringify({ message: message, stage: stage, history: chatHistory })
   });
   var data = await res.json().catch(function () { return {}; });
-  if (!res.ok || !data.reply) {
-    throw new Error((data && data.error) || 'Live model unavailable');
-  }
+  if (!res.ok || !data.reply) throw new Error((data && data.error) || 'Live model unavailable');
   return data.reply;
 }
 
 document.querySelectorAll('[data-stage]').forEach(function (btn) {
-  btn.addEventListener('click', function () {
-    setStage(btn.getAttribute('data-stage'));
-  });
+  btn.addEventListener('click', function () { setStage(btn.getAttribute('data-stage')); });
 });
 
 var chatForm = document.getElementById('chat-form');
@@ -220,17 +191,14 @@ if (chatForm) {
     if (sending) return;
     var text = (chatInput.value || '').trim();
     if (!text) return;
-
     var stage = routeFromText(text);
     setStage(stage);
     appendMessage(text, true);
     chatInput.value = '';
-    addTimeline(STAGE_LABEL[stage], text.slice(0, 80));
+    addTimeline(STAGE_LABEL[stage], text.slice(0, 100));
     chatHistory.push({ role: 'user', content: text });
-
     sending = true;
     chatInput.disabled = true;
-
     try {
       var reply;
       if (liveMode) {
@@ -256,9 +224,194 @@ if (chatForm) {
   });
 }
 
+/* ---------- Consent share (browser-local) ---------- */
+function loadGrants() {
+  try { return JSON.parse(localStorage.getItem(GRANT_KEY) || '{}'); } catch (e) { return {}; }
+}
+function saveGrants(map) {
+  localStorage.setItem(GRANT_KEY, JSON.stringify(map));
+}
+function makeCode() {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var s = '';
+  for (var i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return 'CAD-' + s;
+}
+
+function buildPacket(scopes, purpose, hours) {
+  var profile = [];
+  var events = [];
+  timeline.forEach(function (item) {
+    events.push({ ts: item.t, type: item.label, content: item.detail });
+    if (/baseline|allerg|med|goal|condition|profile/i.test(item.label + ' ' + item.detail)) {
+      profile.push(item.detail);
+    }
+  });
+  chatHistory.forEach(function (m) {
+    if (m.role === 'user') {
+      events.push({ ts: new Date().toLocaleString(), type: 'conversation', content: m.content });
+    }
+  });
+  var expires = Date.now() + (hours * 3600 * 1000);
+  return {
+    code: null,
+    purpose: purpose,
+    scopes: scopes,
+    created_at: new Date().toISOString(),
+    expires_at: new Date(expires).toISOString(),
+    expires_ms: expires,
+    profile: scopes.indexOf('profile') >= 0 ? profile.slice(0, 20) : [],
+    timeline: (scopes.indexOf('timeline') >= 0 || scopes.indexOf('visit_brief') >= 0) ? events.slice(0, 30) : [],
+    insights: [],
+    status: 'active'
+  };
+}
+
+function formatBrief(packet) {
+  var lines = [
+    '# Visit Brief',
+    'Code: ' + packet.code,
+    'Purpose: ' + (packet.purpose || '—'),
+    'Expires: ' + (packet.expires_at || '').replace('T', ' ').slice(0, 19),
+    'Scopes: ' + (packet.scopes || []).join(', '),
+    '',
+    '## Profile snapshot'
+  ];
+  if (packet.profile && packet.profile.length) {
+    packet.profile.forEach(function (p) { lines.push('- ' + p); });
+  } else {
+    lines.push('- (none in this packet)');
+  }
+  lines.push('', '## Timeline');
+  if (packet.timeline && packet.timeline.length) {
+    packet.timeline.forEach(function (t) {
+      lines.push('- [' + (t.ts || '') + '] ' + (t.type || '') + ': ' + (t.content || ''));
+    });
+  } else {
+    lines.push('- (none in this packet)');
+  }
+  lines.push('', '---', 'Educational packet. Not a medical record. Clinician must verify.');
+  return lines.join('\n');
+}
+
+function formatNote(packet) {
+  var lines = [
+    '# Note Draft (AI-assisted — not signed)',
+    'Source code: ' + packet.code,
+    '',
+    '## S — Subjective'
+  ];
+  var sub = (packet.timeline || []).slice(0, 12);
+  if (sub.length) sub.forEach(function (t) { lines.push('- ' + (t.ts || '') + ': ' + (t.content || '')); });
+  else lines.push('- (no timeline in packet)');
+  lines.push('', '## O — Objective', '- (none — do not invent vitals/labs/exam)');
+  lines.push('', '## A — Assessment', '- (clinician to complete — hypotheses only if present)');
+  lines.push('', '## P — Plan', '- (clinician to complete)');
+  lines.push('', '---', 'Disclaimer: Draft from patient-authorized demo packet only. Review, edit, and sign in your own system.');
+  return lines.join('\n');
+}
+
+function getGrant(code) {
+  if (!code) return null;
+  var map = loadGrants();
+  var g = map[code.toUpperCase()];
+  if (!g) return null;
+  if (g.expires_ms && Date.now() > g.expires_ms) {
+    g.status = 'expired';
+    map[code.toUpperCase()] = g;
+    saveGrants(map);
+  }
+  return g;
+}
+
+var btnCreate = document.getElementById('btn-create-share');
+if (btnCreate) {
+  btnCreate.addEventListener('click', function () {
+    var scopes = [];
+    document.querySelectorAll('.scope-cb:checked').forEach(function (cb) { scopes.push(cb.value); });
+    if (!scopes.length) {
+      alert('Select at least one scope');
+      return;
+    }
+    var hours = parseInt((document.getElementById('share-hours') || {}).value || '48', 10);
+    if (!hours || hours < 1) hours = 48;
+    var purpose = ((document.getElementById('share-purpose') || {}).value || 'Upcoming visit').trim();
+    var packet = buildPacket(scopes, purpose, hours);
+    var code = makeCode();
+    packet.code = code;
+    var map = loadGrants();
+    map[code] = packet;
+    saveGrants(map);
+    document.getElementById('share-code').textContent = code;
+    document.getElementById('share-meta').textContent =
+      'Active · ' + scopes.join(', ') + ' · expires in ' + hours + 'h · stored only in this browser';
+    var clinInput = document.getElementById('clinician-code');
+    if (clinInput) clinInput.value = code;
+  });
+}
+
+var btnCopy = document.getElementById('btn-copy-code');
+if (btnCopy) {
+  btnCopy.addEventListener('click', function () {
+    var code = (document.getElementById('share-code') || {}).textContent || '';
+    if (!code || code === '—') return;
+    navigator.clipboard.writeText(code).then(function () {
+      btnCopy.textContent = 'Copied';
+      setTimeout(function () { btnCopy.textContent = 'Copy code'; }, 1200);
+    });
+  });
+}
+
+var btnBrief = document.getElementById('btn-open-brief');
+var btnNote = document.getElementById('btn-draft-note');
+
+function requireGrant() {
+  var code = ((document.getElementById('clinician-code') || {}).value || '').trim().toUpperCase();
+  var g = getGrant(code);
+  var status = document.getElementById('clinician-status');
+  if (!g) {
+    if (status) status.textContent = 'No grant found for that code in this browser.';
+    return null;
+  }
+  if (g.status !== 'active') {
+    if (status) status.textContent = 'Grant status: ' + g.status;
+    return null;
+  }
+  if (status) status.textContent = 'Grant active · purpose: ' + (g.purpose || '—') + ' · scopes: ' + (g.scopes || []).join(', ');
+  return g;
+}
+
+if (btnBrief) {
+  btnBrief.addEventListener('click', function () {
+    var g = requireGrant();
+    if (!g) return;
+    if ((g.scopes || []).indexOf('visit_brief') < 0 && (g.scopes || []).indexOf('profile') < 0) {
+      document.getElementById('clinician-status').textContent = 'Grant lacks visit_brief/profile scope.';
+      return;
+    }
+    document.getElementById('brief-out').textContent = formatBrief(g);
+  });
+}
+
+if (btnNote) {
+  btnNote.addEventListener('click', function () {
+    var g = requireGrant();
+    if (!g) return;
+    var scopes = g.scopes || [];
+    if (scopes.indexOf('note_source') < 0 && scopes.indexOf('visit_brief') < 0) {
+      document.getElementById('clinician-status').textContent = 'Grant lacks note_source/visit_brief scope.';
+      return;
+    }
+    document.getElementById('note-out').textContent = formatNote(g);
+    if (!document.getElementById('brief-out').textContent || document.getElementById('brief-out').textContent === '—') {
+      document.getElementById('brief-out').textContent = formatBrief(g);
+    }
+  });
+}
+
 setStage('TRIAGE');
 setModeBadge('live · openrouter', true);
-addTimeline('System', 'Companion ready — OpenRouter demo when key is set');
+addTimeline('System', 'Companion ready');
 
 if (window.location.hash === '#chat') {
   setTimeout(function () { if (chatInput) chatInput.focus(); }, 400);
