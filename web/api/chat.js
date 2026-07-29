@@ -1,7 +1,7 @@
 /**
  * Cadence live chat proxy — Vercel serverless
  * Model: llama-3.3-70b-versatile via Groq (OpenAI-compatible)
- * Secret: GROQ_API_KEY (Vercel Environment Variable)
+ * Secret: OPENAI_API_KEY (Vercel Environment Variable — holds the Groq key)
  * Free tier: ~30 RPM / 1000 RPD
  */
 
@@ -61,10 +61,10 @@ module.exports = async function handler(req, res) {
     return json(res, 405, { error: 'Method not allowed' });
   }
 
-  const key = process.env.GROQ_API_KEY;
+  const key = process.env.OPENAI_API_KEY;
   if (!key) {
     return json(res, 503, {
-      error: 'GROQ_API_KEY not configured',
+      error: 'OPENAI_API_KEY not configured',
       fallback: true,
     });
   }
