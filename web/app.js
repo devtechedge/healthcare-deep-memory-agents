@@ -204,7 +204,7 @@ if (chatForm) {
       if (liveMode) {
         try {
           reply = await liveReply(stage, text);
-          setModeBadge('live · openrouter', true);
+          setModeBadge('live · groq', true);
         } catch (err) {
           liveMode = false;
           setModeBadge('demo fallback', false);
@@ -410,7 +410,7 @@ if (btnNote) {
 }
 
 setStage('TRIAGE');
-setModeBadge('live · openrouter', true);
+setModeBadge('live · groq', true);
 addTimeline('System', 'Companion ready');
 
 if (window.location.hash === '#chat') {

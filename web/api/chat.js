@@ -1,10 +1,12 @@
 /**
- * Cadence demo chat proxy — Vercel serverless
- * Model: nvidia/nemotron-3-ultra-550b-a55b:free via OpenRouter
- * Secret: OPENROUTER_API_KEY (Vercel Environment Variable)
+ * Cadence live chat proxy — Vercel serverless
+ * Model: llama-3.3-70b-versatile via Groq (OpenAI-compatible)
+ * Secret: GROQ_API_KEY (Vercel Environment Variable)
+ * Free tier: ~30 RPM / 1000 RPD
  */
 
-const MODEL = 'nvidia/nemotron-3-ultra-550b-a55b:free';
+const MODEL = 'llama-3.3-70b-versatile';
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const STAGE_PROMPTS = {
   BASELINE: `You are Cadence Baseline — a calm wellness intake companion.
@@ -59,10 +61,10 @@ module.exports = async function handler(req, res) {
     return json(res, 405, { error: 'Method not allowed' });
   }
 
-  const key = process.env.OPENROUTER_API_KEY;
+  const key = process.env.GROQ_API_KEY;
   if (!key) {
     return json(res, 503, {
-      error: 'OPENROUTER_API_KEY not configured',
+      error: 'GROQ_API_KEY not configured',
       fallback: true,
     });
   }
@@ -95,13 +97,11 @@ module.exports = async function handler(req, res) {
   ];
 
   try {
-    const upstream = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const upstream = await fetch(GROQ_URL, {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + key,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://cadence-devtechedge1.vercel.app',
-        'X-Title': 'Cadence Patient Journey Demo',
       },
       body: JSON.stringify({
         model: MODEL,
@@ -116,7 +116,7 @@ module.exports = async function handler(req, res) {
     if (!upstream.ok) {
       const errMsg =
         (data && data.error && (data.error.message || data.error)) ||
-        'OpenRouter error ' + upstream.status;
+        'Groq error ' + upstream.status;
       return json(res, 502, { error: String(errMsg), fallback: true });
     }
 
@@ -137,7 +137,7 @@ module.exports = async function handler(req, res) {
       reply,
       stage,
       model: MODEL,
-      mode: 'openrouter',
+      mode: 'groq',
     });
   } catch (err) {
     return json(res, 500, {
