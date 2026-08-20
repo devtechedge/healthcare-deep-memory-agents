@@ -53,7 +53,7 @@
         <a href="#share" class="hover:text-cadence-600 dark:hover:text-cadence-400 transition-colors">Share</a>
         <a href="#clinician" class="hover:text-cadence-600 dark:hover:text-cadence-400 transition-colors">Clinician</a>
       </div>
-      <button id="theme-toggle" class="water-btn p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all" aria-label="Toggle theme">
+      <button id="theme-toggle" data-testid="theme-toggle" class="water-btn p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all" aria-label="Toggle theme">
         <svg class="w-5 h-5 hidden dark:block text-amber-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>
         <svg class="w-5 h-5 block dark:hidden text-slate-600" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
       </button>
@@ -62,7 +62,7 @@
 
   <section class="relative pt-28 pb-10 px-6">
     <div class="max-w-6xl mx-auto text-center" data-parallax="0.12">
-      <h1 class="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight leading-[1.1] mb-4">
+      <h1 class="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight leading-[1.1] mb-4" data-testid="hero">
         Your care journey,<br/>
         <span class="bg-gradient-to-r from-cadence-500 via-indigo-500 to-violet-500 bg-clip-text text-transparent">remembered</span>
       </h1>
@@ -76,7 +76,7 @@
     </div>
   </section>
 
-  <section id="journey" class="px-6 pb-8">
+  <section id="journey" class="px-6 pb-8" data-testid="journey">
     <div class="max-w-5xl mx-auto">
       <p class="text-center text-xs font-medium uppercase tracking-wider text-slate-400 mb-4">Your path</p>
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
@@ -123,7 +123,7 @@
               <div class="text-xs text-slate-500">Stage: <span id="stage-badge" class="text-cadence-600 dark:text-cadence-400 font-medium">Triage</span></div>
             </div>
           </div>
-          <div id="mode-badge" class="text-[10px] font-mono px-2 py-1 rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800">connecting…</div>
+          <div id="mode-badge" data-testid="mode-badge" class="text-[10px] font-mono px-2 py-1 rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800">connecting…</div>
         </div>
         <div id="chat-messages" class="h-[340px] overflow-y-auto p-5 space-y-4 scroll-smooth">
           <div class="flex gap-3">
@@ -135,9 +135,9 @@
           </div>
         </div>
         <div class="p-4 border-t border-slate-100 dark:border-slate-800">
-          <form id="chat-form" class="flex gap-3">
-            <input id="chat-input" type="text" placeholder="Describe a symptom…" class="flex-1 px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-cadence-500/40" autocomplete="off" />
-            <button type="submit" class="water-btn px-5 py-3 rounded-2xl bg-gradient-to-r from-cadence-500 to-indigo-500 text-white font-medium">Send</button>
+          <form id="chat-form" data-testid="chat-form" class="flex gap-3">
+            <input id="chat-input" data-testid="chat-input" type="text" placeholder="Describe a symptom…" class="flex-1 px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-cadence-500/40" autocomplete="off" />
+            <button type="submit" data-testid="chat-send" class="water-btn px-5 py-3 rounded-2xl bg-gradient-to-r from-cadence-500 to-indigo-500 text-white font-medium">Send</button>
           </form>
         </div>
       </div>
@@ -188,11 +188,11 @@
             <label class="text-xs font-medium text-slate-500" for="share-purpose">Purpose</label>
             <input id="share-purpose" type="text" value="Upcoming visit" class="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
           </div>
-          <button type="button" id="btn-create-share" class="water-btn px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cadence-500 to-indigo-500 text-white text-sm font-medium">Create share code</button>
+          <button type="button" id="btn-create-share" data-testid="btn-create-share" class="water-btn px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cadence-500 to-indigo-500 text-white text-sm font-medium">Create share code</button>
         </div>
         <div class="rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 p-4">
           <div class="text-xs text-slate-400 mb-2">Share code</div>
-          <div id="share-code" class="font-mono text-2xl tracking-widest text-cadence-600 dark:text-cadence-400 mb-3">—</div>
+          <div id="share-code" data-testid="share-code" class="font-mono text-2xl tracking-widest text-cadence-600 dark:text-cadence-400 mb-3">—</div>
           <p id="share-meta" class="text-xs text-slate-500 mb-3">Generate a code after chatting so the timeline has content.</p>
           <button type="button" id="btn-copy-code" class="water-btn text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">Copy code</button>
         </div>
@@ -212,16 +212,16 @@
         <div class="flex flex-wrap gap-3 items-end">
           <div class="flex-1 min-w-[180px]">
             <label class="text-xs font-medium text-slate-500" for="clinician-code">Share code</label>
-            <input id="clinician-code" type="text" placeholder="CAD-XXXXXX" class="mt-1 w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-mono uppercase" />
+            <input id="clinician-code" data-testid="clinician-code" type="text" placeholder="CAD-XXXXXX" class="mt-1 w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-mono uppercase" />
           </div>
-          <button type="button" id="btn-open-brief" class="water-btn px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cadence-500 to-indigo-500 text-white text-sm font-medium">Open brief</button>
-          <button type="button" id="btn-draft-note" class="water-btn px-5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-sm font-medium">Draft note</button>
+          <button type="button" id="btn-open-brief" data-testid="btn-open-brief" class="water-btn px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cadence-500 to-indigo-500 text-white text-sm font-medium">Open brief</button>
+          <button type="button" id="btn-draft-note" data-testid="btn-draft-note" class="water-btn px-5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-sm font-medium">Draft note</button>
         </div>
         <div id="clinician-status" class="text-xs text-slate-400">Waiting for a share code.</div>
         <div class="grid md:grid-cols-2 gap-4">
           <div>
             <div class="text-xs font-medium text-slate-500 mb-2">Visit brief</div>
-            <pre id="brief-out" class="text-xs leading-relaxed whitespace-pre-wrap rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 p-4 max-h-[420px] overflow-y-auto">—</pre>
+            <pre id="brief-out" data-testid="brief-out" class="text-xs leading-relaxed whitespace-pre-wrap rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 p-4 max-h-[420px] overflow-y-auto">—</pre>
           </div>
           <div>
             <div class="text-xs font-medium text-slate-500 mb-2">Note draft</div>
