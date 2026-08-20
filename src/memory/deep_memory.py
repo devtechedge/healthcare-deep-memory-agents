@@ -1,6 +1,6 @@
 """
 Deep multi-layer memory for healthcare agents.
-Pure Python + SQLite + sentence-transformers.
+Pure Python + SQLite. Embedder is injectable (tests skip sentence-transformers).
 No agent frameworks.
 """
 
@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import numpy as np
-from sentence_transformers import SentenceTransformer
 
 
 class DeepMemory:
@@ -24,6 +23,7 @@ class DeepMemory:
         db_path: str = "data/healthcare_memory.db",
         vectors_path: str = "data/vectors.pkl",
         emb_model: str = "sentence-transformers/all-MiniLM-L6-v2",
+        embedder: Any = None,
     ):
         self.db_path = Path(db_path)
         self.vectors_path = Path(vectors_path)
@@ -33,7 +33,12 @@ class DeepMemory:
         self.db.row_factory = sqlite3.Row
         self._init_schema()
 
-        self.embedder = SentenceTransformer(emb_model)
+        if embedder is not None:
+            self.embedder = embedder
+        else:
+            from sentence_transformers import SentenceTransformer
+
+            self.embedder = SentenceTransformer(emb_model)
         self.vectors: Dict[str, np.ndarray] = {}
         self._load_vectors()
 
@@ -173,7 +178,6 @@ class DeepMemory:
                     "score": score,
                 }
             )
-            # touch last_accessed
             self.db.execute(
                 "UPDATE semantic SET last_accessed=? WHERE id=?",
                 (datetime.now(timezone.utc).isoformat(), sid),
@@ -181,7 +185,7 @@ class DeepMemory:
         self.db.commit()
         return results
 
-    # ---------- Insights (stub for later) ----------
+    # ---------- Insights ----------
     def add_insight(
         self, patient_id: str, pattern: str, evidence: str, verified: bool = False
     ) -> str:
@@ -201,8 +205,8 @@ class DeepMemory:
         self.db.commit()
         return iid
 
-    # ---------- Persistence helpers ----------
     def _save_vectors(self) -> None:
+        self.vectors_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.vectors_path, "wb") as f:
             pickle.dump(self.vectors, f)
 

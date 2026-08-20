@@ -8,7 +8,9 @@ from __future__ import annotations
 from typing import Optional
 
 from src.agents.base_agent import HealthcareAgent
+from src.agents.routing import STAGES as JOURNEY_STAGES, coerce_stage, keyword_route
 from src.memory.deep_memory import DeepMemory
+
 
 
 # ---------- System prompts (stage-specific) ----------
@@ -107,14 +109,9 @@ class PatientOrchestrator:
     All agents share one DeepMemory instance.
     """
 
-    STAGES = (
-        "BASELINE",
-        "TRIAGE",
-        "VISIT_PREP",
-        "CARE",
-        "PATTERN",
-        "RECOVERY",
-    )
+    STAGES = JOURNEY_STAGES
+
+
 
     def __init__(self, memory: DeepMemory, model: str = "llama3.1"):
         self.memory = memory
@@ -130,27 +127,15 @@ class PatientOrchestrator:
         }
         self.last_stage: Optional[str] = None
 
+
     def _route(self, patient_id: str, user_msg: str) -> str:
-        # Lightweight keyword shortcuts (fast, deterministic) before LLM route
-        lower = user_msg.lower()
-        if any(k in lower for k in ("allerg", "my meds", "i take", "baseline", "my goal")):
-            return "BASELINE"
-        if any(k in lower for k in ("prepare my visit", "questions for", "see my doctor", "appointment")):
-            return "VISIT_PREP"
-        if any(k in lower for k in ("side effect", "missed dose", "took my", "adherence", "care plan")):
-            return "CARE"
-        if any(k in lower for k in ("pattern", "why do i always", "keeps happening", "correlation")):
-            return "PATTERN"
-        if any(k in lower for k in ("feeling better", "recovery", "milestone", "healed")):
-            return "RECOVERY"
-        if any(k in lower for k in ("pain", "hurt", "symptom", "fever", "nausea", "dizzy", "ache")):
-            return "TRIAGE"
+        hit = keyword_route(user_msg)
+        if hit:
+            return hit
 
         raw = self.router.think(patient_id, user_msg).strip().upper()
-        for stage in self.STAGES:
-            if stage in raw:
-                return stage
-        return self.last_stage or "TRIAGE"
+        return coerce_stage(raw, self.last_stage)
+
 
     def chat(self, patient_id: str, user_msg: str, force_stage: Optional[str] = None) -> str:
         stage = (force_stage or self._route(patient_id, user_msg)).upper()
