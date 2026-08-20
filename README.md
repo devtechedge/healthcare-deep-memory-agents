@@ -1,4 +1,4 @@
-# Cadence
+# <img src="web/favicon.svg" width="40" height="40" alt="" /> Cadence
 
 **Deep-memory vertical agents for healthcare** — pure Python, fully local, zero agentic frameworks.
 
@@ -6,7 +6,7 @@
 [![CI](https://github.com/devtechedge/healthcare-deep-memory-agents/actions/workflows/ci.yml/badge.svg)](https://github.com/devtechedge/healthcare-deep-memory-agents/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Release](https://img.shields.io/badge/release-v0.1.0-brightgreen.svg)](https://github.com/devtechedge/healthcare-deep-memory-agents/releases)
+[![Release](https://img.shields.io/badge/release-v0.2.0-brightgreen.svg)](https://github.com/devtechedge/healthcare-deep-memory-agents/releases/tag/v0.2.0)
 
 > **Disclaimer**: Educational / research prototype only. Never use for real medical decisions. Always consult qualified clinicians.
 
@@ -15,6 +15,16 @@
 https://cadence-healthcare.vercel.app/
 
 > **Status:** Public UI is a client-side companion + share-code clinician brief. Live chat uses Groq `llama-3.3-70b-versatile` (env `OPENAI_API_KEY` on Vercel). If the key is missing or Groq errors, the badge switches to **demo fallback**. Full multi-layer memory + consent grants run locally (`python run_patient.py` / `python run_clinician.py` + Ollama). Do not enter real PHI.
+
+## Screenshots
+
+| Overview | Companion |
+| --- | --- |
+| ![Overview](docs/screenshots/01-overview.png) | ![Companion](docs/screenshots/02-companion-timeline.png) |
+
+| Share code | Clinician brief |
+| --- | --- |
+| ![Share](docs/screenshots/03-share-code.png) | ![Brief](docs/screenshots/04-clinician-brief.png) |
 
 ---
 
@@ -27,6 +37,19 @@ Vertical AI agents that remember — symptoms, history, preferences — across s
 - Fully local & free (Ollama + SQLite + sentence-transformers)
 - Consent-scoped clinician brief / note draft
 - **Patient journey first**: Baseline → Triage → Visit Prep → Care → Pattern → Recovery
+
+---
+
+## Tech stack
+
+| Layer | Choice |
+|-------|--------|
+| Agents | Pure Python (no LangChain / CrewAI / Mem0) |
+| Local LLM | Ollama (`llama3.1`) |
+| Live UI chat | Groq `llama-3.3-70b-versatile` via Vercel `/api/chat` |
+| Memory | SQLite + sentence-transformers (injectable embedder) |
+| Consent | Scope-gated grants + audit table |
+| UI | Static HTML / Tailwind CDN on Vercel |
 
 ---
 
@@ -101,13 +124,11 @@ Spec: [`docs/PATIENT_JOURNEY.md`](docs/PATIENT_JOURNEY.md)
 
 ```
 healthcare-deep-memory-agents/
-├── docs/PATIENT_JOURNEY.md
+├── docs/screenshots/        ← hiring-manager shots
 ├── run_patient.py           ← patient journey CLI
-├── run_agent.py             ← single agent CLI
 ├── run_clinician.py         ← grant / brief / note CLI
-├── src/
-│   ├── memory/              ← DeepMemory + ConsentStore
-│   └── agents/
+├── src/memory/              ← DeepMemory + ConsentStore
+├── src/agents/
 ├── web/                     ← Cadence UI (Vercel)
 ├── tests/                   ← pytest (no torch / Ollama)
 ├── e2e/                     ← Playwright smokes
