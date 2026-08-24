@@ -18,6 +18,10 @@ https://cadence-healthcare.vercel.app/
 
 ## Screenshots
 
+<p align="center">
+  <img src="docs/social-preview.jpg" alt="Cadence Healthcare" width="800">
+</p>
+
 | Overview | Companion |
 | --- | --- |
 | ![Overview](docs/screenshots/01-overview.png) | ![Companion](docs/screenshots/02-companion-timeline.png) |
