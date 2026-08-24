@@ -124,7 +124,7 @@ Spec: [`docs/PATIENT_JOURNEY.md`](docs/PATIENT_JOURNEY.md)
 
 ```
 healthcare-deep-memory-agents/
-├── docs/screenshots/        ← hiring-manager shots
+├── docs/screenshots/        ← product screenshots
 ├── run_patient.py           ← patient journey CLI
 ├── run_clinician.py         ← grant / brief / note CLI
 ├── src/memory/              ← DeepMemory + ConsentStore
