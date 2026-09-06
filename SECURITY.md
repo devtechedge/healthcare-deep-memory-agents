@@ -1,10 +1,12 @@
 # Security Assessment — Cadence (healthcare-deep-memory-agents)
 
-**Date:** 2026-08-21  
+**Date:** 2026-09-06  
 **Scope:** Auth, XSS, injection, secrets, PHI, LLM proxy, consent grants  
 **Live:** [cadence-healthcare.vercel.app](https://cadence-healthcare.vercel.app/)
 
 This is an **educational / research prototype**. It is not a medical device, not HIPAA-certified, and must not store real patient records.
+
+Repos stay **public until deliberately made private**. Honest demo threat model — **not** a bank-grade guarantee. **No real PHI** — demo / fictional data only.
 
 ---
 
@@ -21,7 +23,8 @@ This is an **educational / research prototype**. It is not a medical device, not
 | Public LLM proxy | **Accepted residual** | Chat text is sent to Groq; env var is named `OPENAI_API_KEY` |
 | PHI | **High if misused** | Do not enter real identifiers. Demo data only |
 | Pickle vectors | **Accepted residual** | `data/vectors.pkl` is local-only; never load untrusted pickles |
-| CORS on `/api/chat` | **Accepted residual** | `Access-Control-Allow-Origin: *` on a public demo POST |
+| CORS on `/api/chat` | **Hardened** | Same-origin or explicit allowlist (Cadence Vercel + localhost); no `*` |
+| Rate limits | **Best-effort** | In-memory per-IP on `/api/chat`; resets per serverless isolate |
 
 **Overall (public Vercel demo):** Low-to-medium residual risk if used as a **demo**. **High** if anyone pastes real clinical data into the live chat.
 
@@ -70,7 +73,8 @@ This is an **educational / research prototype**. It is not a medical device, not
 
 **Residual**
 - Env var name `OPENAI_API_KEY` is misleading (it holds a Groq key). Renaming would require a Vercel change; left as-is.
-- No server-side rate limit beyond Groq’s free tier (~30 RPM / 1000 RPD).
+- In-memory per-IP rate limit on `/api/chat` (~20/min) plus Groq’s free tier.
+- Missing key returns a **demo fallback reply** (HTTP 200); errors are scrubbed for key-shaped tokens.
 - Prompt injection: a user can try to override the “never diagnose” system prompt. Model output is untrusted text.
 
 ---
@@ -84,7 +88,7 @@ This is an **educational / research prototype**. It is not a medical device, not
 - Timeline and grants: this browser only.
 - Companion messages: Groq when live mode succeeds.
 
-Never put real names, MRNs, or identifiable health data in either path.
+Never put real names, MRNs, or identifiable health data in either path. **Reiterated 2026-09-06: no real PHI in the live demo or local agents.**
 
 ---
 
@@ -119,7 +123,7 @@ Do not run `npm audit fix --force` here — there is no production Node graph, o
 
 1. Public chat traffic to Groq.
 2. `OPENAI_API_KEY` naming.
-3. CORS `*`.
+3. Best-effort rate limits (not a distributed WAF).
 4. `localStorage` grants (any script on the origin can read them).
 5. Pickle of embedding vectors (local file; never untrusted).
 6. CDN Tailwind / Google Fonts.

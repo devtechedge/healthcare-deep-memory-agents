@@ -3,6 +3,7 @@
  * Model: llama-3.3-70b-versatile via Groq (OpenAI-compatible)
  * Secret: OPENAI_API_KEY (Vercel Environment Variable — holds the Groq key)
  * Free tier: ~30 RPM / 1000 RPD
+ * Hardening: allowlisted CORS (no *), rate limit, demo fallback without key, scrub secrets.
  */
 
 const MODEL = 'llama-3.3-70b-versatile';
@@ -44,29 +45,118 @@ Rules:
 - Match the patient's language simply and clearly.
 `.trim();
 
-function json(res, status, body) {
+
+const ALLOWED_ORIGINS = (
+  process.env.CORS_ORIGINS ||
+  'https://cadence-healthcare.vercel.app,http://localhost:3000,http://127.0.0.1:3000'
+)
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+const DEMO_REPLIES = {
+  BASELINE:
+    'Thanks for sharing that baseline context. In this demo I only keep notes in your browser. What is one wellness goal you want your clinician to know about? This is educational — not a medical record.',
+  TRIAGE:
+    'I can help you organize symptoms for a clinician (onset, severity 1–10, location). I cannot diagnose. If this feels urgent — chest pain with shortness of breath, sudden neurological changes, severe bleeding, or anaphylaxis — seek emergency care now.',
+  VISIT_PREP:
+    'For visit prep, jot a short timeline, your top three questions, and what success looks like today. Bring this list to your clinician — I am a demo companion, not care.',
+  CARE:
+    'Noted for your care-plan journal (browser-only). Do not change prescribed regimens based on this chat. Flag side effects to your clinician.',
+  PATTERN:
+    'Any pattern I suggest is a hypothesis only — not a diagnosis. Does sleep, stress, or activity seem to line up with what you notice?',
+  RECOVERY:
+    'Recovery check-ins here are educational. If symptoms worsen, contact your clinician or urgent care. What milestone feels most relevant today?',
+};
+
+const g = globalThis;
+if (!g.__cadenceHits) g.__cadenceHits = new Map();
+
+function clientIp(req) {
+  const xf = req.headers['x-forwarded-for'];
+  if (typeof xf === 'string' && xf.length) return xf.split(',')[0].trim();
+  return req.socket && req.socket.remoteAddress ? req.socket.remoteAddress : 'unknown';
+}
+
+function rateLimited(req) {
+  const ip = clientIp(req);
+  const now = Date.now();
+  const windowMs = 60_000;
+  const max = 20;
+  const map = g.__cadenceHits;
+  let arr = map.get(ip) || [];
+  arr = arr.filter((t) => now - t < windowMs);
+  if (arr.length >= max) {
+    map.set(ip, arr);
+    return true;
+  }
+  arr.push(now);
+  map.set(ip, arr);
+  return false;
+}
+
+function resolveOrigin(req) {
+  const origin = req.headers.origin;
+  if (!origin) return null;
+  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  const host = req.headers.host;
+  if (host && (origin === 'https://' + host || origin === 'http://' + host)) return origin;
+  return undefined;
+}
+
+function scrub(text) {
+  if (!text) return text;
+  let s = String(text);
+  const key = process.env.OPENAI_API_KEY;
+  if (key && key.length > 8) s = s.split(key).join('[redacted]');
+  s = s.replace(/gsk_[A-Za-z0-9]+/g, '[redacted]');
+  s = s.replace(/sk-[A-Za-z0-9]+/g, '[redacted]');
+  return s;
+}
+
+function demoPayload(stage) {
+  const s = STAGE_PROMPTS[stage] ? stage : 'TRIAGE';
+  return {
+    reply: DEMO_REPLIES[s] || DEMO_REPLIES.TRIAGE,
+    stage: s,
+    model: 'demo-fallback',
+    mode: 'demo',
+    fallback: true,
+  };
+}
+
+function json(res, status, body, allowOrigin) {
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  if (allowOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', allowOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Vary', 'Origin');
+  }
+  if (body && typeof body === 'object' && body.error) {
+    body = Object.assign({}, body, { error: scrub(body.error) });
+  }
   res.end(JSON.stringify(body));
 }
 
 module.exports = async function handler(req, res) {
-  if (req.method === 'OPTIONS') {
-    return json(res, 204, {});
-  }
-  if (req.method !== 'POST') {
-    return json(res, 405, { error: 'Method not allowed' });
+  const allowOrigin = resolveOrigin(req);
+  if (req.headers.origin && allowOrigin === undefined) {
+    return json(res, 403, { error: 'Origin not allowed' }, null);
   }
 
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) {
-    return json(res, 503, {
-      error: 'OPENAI_API_KEY not configured',
-      fallback: true,
-    });
+  if (req.method === 'OPTIONS') {
+    return json(res, 204, {}, allowOrigin);
+  }
+  if (req.method !== 'POST') {
+    return json(res, 405, { error: 'Method not allowed' }, allowOrigin);
+  }
+
+  if (rateLimited(req)) {
+    return json(res, 429, { error: 'Rate limit exceeded', fallback: true }, allowOrigin);
   }
 
   let body = req.body;
@@ -74,7 +164,7 @@ module.exports = async function handler(req, res) {
     try {
       body = JSON.parse(body);
     } catch {
-      return json(res, 400, { error: 'Invalid JSON' });
+      return json(res, 400, { error: 'Invalid JSON' }, allowOrigin);
     }
   }
   body = body || {};
@@ -84,7 +174,12 @@ module.exports = async function handler(req, res) {
   const history = Array.isArray(body.history) ? body.history.slice(-8) : [];
 
   if (!message) {
-    return json(res, 400, { error: 'message required' });
+    return json(res, 400, { error: 'message required' }, allowOrigin);
+  }
+
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) {
+    return json(res, 200, demoPayload(stage), allowOrigin);
   }
 
   const stagePrompt = STAGE_PROMPTS[stage] || STAGE_PROMPTS.TRIAGE;
@@ -117,7 +212,7 @@ module.exports = async function handler(req, res) {
       const errMsg =
         (data && data.error && (data.error.message || data.error)) ||
         'Groq error ' + upstream.status;
-      return json(res, 502, { error: String(errMsg), fallback: true });
+      return json(res, 502, { error: scrub(String(errMsg)), fallback: true }, allowOrigin);
     }
 
     const reply =
@@ -130,7 +225,7 @@ module.exports = async function handler(req, res) {
         : '';
 
     if (!reply) {
-      return json(res, 502, { error: 'Empty model response', fallback: true });
+      return json(res, 502, { error: 'Empty model response', fallback: true }, allowOrigin);
     }
 
     return json(res, 200, {
@@ -138,11 +233,11 @@ module.exports = async function handler(req, res) {
       stage,
       model: MODEL,
       mode: 'groq',
-    });
+    }, allowOrigin);
   } catch (err) {
     return json(res, 500, {
-      error: err && err.message ? err.message : 'Proxy failure',
+      error: scrub(err && err.message ? err.message : 'Proxy failure'),
       fallback: true,
-    });
+    }, allowOrigin);
   }
 };
