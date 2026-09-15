@@ -68,7 +68,7 @@ ConsentGrant
 ### Rules
 
 1. **No grant → no clinician read** of patient memory  
-2. **Expiry is absolute** — jobs mark `expired`; API refuses  
+2. **Expiry is absolute** - jobs mark `expired`; API refuses  
 3. **Revoke is immediate**  
 4. **Audit every access** (who, when, scope, grant_id)  
 5. Prefer **packet_snapshot** so later patient edits don’t silently change what the clinician already opened  

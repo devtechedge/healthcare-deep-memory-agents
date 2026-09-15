@@ -1,6 +1,6 @@
 # <img src="web/favicon.svg" width="40" height="40" alt="" /> Cadence
 
-**Deep-memory vertical agents for healthcare** — pure Python, fully local, zero agentic frameworks.
+**Deep-memory vertical agents for healthcare** - pure Python, fully local, zero agentic frameworks.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?logo=vercel)](https://cadence-healthcare.vercel.app/)
 [![CI](https://github.com/devtechedge/healthcare-deep-memory-agents/actions/workflows/ci.yml/badge.svg)](https://github.com/devtechedge/healthcare-deep-memory-agents/actions/workflows/ci.yml)
@@ -34,7 +34,7 @@ https://cadence-healthcare.vercel.app/
 
 ## What it is
 
-Vertical AI agents that remember — symptoms, history, preferences — across sessions.
+Vertical AI agents that remember - symptoms, history, preferences - across sessions.
 
 - Multi-layer deep memory (session · episodic · semantic · knowledge · insights)
 - Pure Python only (no LangChain, CrewAI, AutoGen, Mem0…)

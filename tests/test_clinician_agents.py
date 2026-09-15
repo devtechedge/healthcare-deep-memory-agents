@@ -69,8 +69,8 @@ def test_note_draft_has_soap_and_disclaimer(ctx):
         gid, "dr_lee", clinician_bullets=["follow up in 2 weeks"]
     )
     md = note["markdown"]
-    assert "## S — Subjective" in md
-    assert "## O — Objective" in md
+    assert "## S - Subjective" in md
+    assert "## O - Objective" in md
     assert "do not invent vitals" in md
     assert "follow up in 2 weeks" in md
     assert "Not a legal medical record" in md

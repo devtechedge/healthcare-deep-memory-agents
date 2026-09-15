@@ -1,4 +1,4 @@
-# Security Assessment — Cadence (healthcare-deep-memory-agents)
+# Security Assessment - Cadence (healthcare-deep-memory-agents)
 
 **Date:** 2026-09-06  
 **Scope:** Auth, XSS, injection, secrets, PHI, LLM proxy, consent grants  
@@ -6,7 +6,7 @@
 
 This is an **educational / research prototype**. It is not a medical device, not HIPAA-certified, and must not store real patient records.
 
-Repos stay **public until deliberately made private**. Honest demo threat model — **not** a bank-grade guarantee. **No real PHI** — demo / fictional data only.
+Repos stay **public until deliberately made private**. Honest demo threat model - **not** a bank-grade guarantee. **No real PHI** - demo / fictional data only.
 
 ---
 
@@ -115,7 +115,7 @@ This is a teaching implementation, not a substitute for an EHR access-control sy
 
 CI installs `pytest` + `numpy` only and injects a dummy embedder so GitHub Actions does not download torch.
 
-Do not run `npm audit fix --force` here — there is no production Node graph, only Playwright as a devDependency.
+Do not run `npm audit fix --force` here - there is no production Node graph, only Playwright as a devDependency.
 
 ---
 
@@ -127,4 +127,4 @@ Do not run `npm audit fix --force` here — there is no production Node graph, o
 4. `localStorage` grants (any script on the origin can read them).
 5. Pickle of embedding vectors (local file; never untrusted).
 6. CDN Tailwind / Google Fonts.
-7. Educational medical language that a visitor might over-trust — footer + system prompts still say “not a substitute for care.”
+7. Educational medical language that a visitor might over-trust - footer + system prompts still say “not a substitute for care.”

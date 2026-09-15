@@ -1,4 +1,4 @@
-# Clinician Workflow — Visit Brief + Note Draft
+# Clinician Workflow - Visit Brief + Note Draft
 
 **Who pays:** clinics / clinicians.  
 **What they buy:** time saved before and during the visit, without unsafe access to the full patient chat log.
@@ -9,8 +9,8 @@ Depends on: `docs/CONSENT_AND_MEMORY.md`
 
 ## Job to be done
 
-1. **Before visit** — open a **Visit Brief** built from patient-approved memory  
-2. **During / after visit** — generate a **Note Draft** the clinician edits and owns  
+1. **Before visit** - open a **Visit Brief** built from patient-approved memory  
+2. **During / after visit** - generate a **Note Draft** the clinician edits and owns  
 
 Cadence never becomes the legal medical record of truth; the clinician does.
 
@@ -57,7 +57,7 @@ Purpose:           e.g. follow-up HTN
 Clinician-facing draft, e.g. SOAP-ish or clinic template:
 
 ```text
-NOTE DRAFT (editable — not final chart)
+NOTE DRAFT (editable - not final chart)
 ---------------------------------------
 S: …
 O: … (only if data present; never invent vitals)
@@ -84,7 +84,7 @@ Disclaimer: AI-assisted draft. Clinician must review and sign.
 | `VisitBriefAgent` | patient_id + grant_id | Visit Brief markdown/JSON |
 | `NoteDraftAgent` | brief + optional clinician bullets | Note Draft markdown |
 
-Both share **read** access through the consent layer only — they do not open the full vault.
+Both share **read** access through the consent layer only - they do not open the full vault.
 
 ---
 

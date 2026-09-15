@@ -168,10 +168,10 @@ class NoteDraftAgent:
         plan_bits = bullets
 
         md_lines = [
-            "# Note Draft (AI-assisted — not signed)",
+            "# Note Draft (AI-assisted - not signed)",
             f"Sources: grant `{grant_id}` · brief generated `{brief.get('generated_at', '')[:19]}`",
             "",
-            "## S — Subjective",
+            "## S - Subjective",
         ]
         if subjective:
             for s in subjective[:12]:
@@ -179,9 +179,9 @@ class NoteDraftAgent:
         else:
             md_lines.append("- _(no timeline in packet)_")
 
-        md_lines += ["", "## O — Objective", "- _(none — do not invent vitals/labs/exam)_"]
+        md_lines += ["", "## O - Objective", "- _(none - do not invent vitals/labs/exam)_"]
 
-        md_lines += ["", "## A — Assessment"]
+        md_lines += ["", "## A - Assessment"]
         if assessment:
             for a in assessment:
                 md_lines.append(f"- {a}")
@@ -189,7 +189,7 @@ class NoteDraftAgent:
         else:
             md_lines.append("- _(clinician to complete)_")
 
-        md_lines += ["", "## P — Plan"]
+        md_lines += ["", "## P - Plan"]
         if plan_bits:
             for p in plan_bits:
                 md_lines.append(f"- {p}")

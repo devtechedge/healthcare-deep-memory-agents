@@ -1,7 +1,7 @@
 /**
- * Cadence live chat proxy — Vercel serverless
+ * Cadence live chat proxy - Vercel serverless
  * Model: llama-3.3-70b-versatile via Groq (OpenAI-compatible)
- * Secret: OPENAI_API_KEY (Vercel Environment Variable — holds the Groq key)
+ * Secret: OPENAI_API_KEY (Vercel Environment Variable - holds the Groq key)
  * Free tier: ~30 RPM / 1000 RPD
  * Hardening: allowlisted CORS (no *), rate limit, demo fallback without key, scrub secrets.
  */
@@ -10,11 +10,11 @@ const MODEL = 'llama-3.3-70b-versatile';
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const STAGE_PROMPTS = {
-  BASELINE: `You are Cadence Baseline — a calm wellness intake companion.
+  BASELINE: `You are Cadence Baseline - a calm wellness intake companion.
 Help the patient build a health baseline: conditions, allergies, medications, sleep/stress/activity norms, goals.
 Ask at most one or two focused questions. Never diagnose or prescribe. Encourage professional care.`,
 
-  TRIAGE: `You are Cadence Triage — a careful symptom companion.
+  TRIAGE: `You are Cadence Triage - a careful symptom companion.
 Help structure symptoms: onset, severity 1-10, location, triggers, relieving factors, associated symptoms.
 Never diagnose or prescribe. If symptoms could be urgent (chest pain with shortness of breath, sudden severe neurological changes, uncontrolled bleeding, severe allergic reaction), urge emergency/urgent care immediately.
 Be concise, warm, and precise.`,
@@ -28,7 +28,7 @@ Help with medication adherence notes, side effects, and care-plan tasks.
 Never change prescribed regimens. Record without shame. Clinician owns medication decisions.`,
 
   PATTERN: `You are Cadence Pattern.
-Suggest possible correlations from what the patient describes (e.g. sleep and headaches) as hypotheses only — not facts or diagnoses.
+Suggest possible correlations from what the patient describes (e.g. sleep and headaches) as hypotheses only - not facts or diagnoses.
 Invite confirmation or rejection.`,
 
   RECOVERY: `You are Cadence Recovery.
@@ -56,15 +56,15 @@ const ALLOWED_ORIGINS = (
 
 const DEMO_REPLIES = {
   BASELINE:
-    'Thanks for sharing that baseline context. In this demo I only keep notes in your browser. What is one wellness goal you want your clinician to know about? This is educational — not a medical record.',
+    'Thanks for sharing that baseline context. In this demo I only keep notes in your browser. What is one wellness goal you want your clinician to know about? This is educational - not a medical record.',
   TRIAGE:
-    'I can help you organize symptoms for a clinician (onset, severity 1–10, location). I cannot diagnose. If this feels urgent — chest pain with shortness of breath, sudden neurological changes, severe bleeding, or anaphylaxis — seek emergency care now.',
+    'I can help you organize symptoms for a clinician (onset, severity 1–10, location). I cannot diagnose. If this feels urgent - chest pain with shortness of breath, sudden neurological changes, severe bleeding, or anaphylaxis - seek emergency care now.',
   VISIT_PREP:
-    'For visit prep, jot a short timeline, your top three questions, and what success looks like today. Bring this list to your clinician — I am a demo companion, not care.',
+    'For visit prep, jot a short timeline, your top three questions, and what success looks like today. Bring this list to your clinician - I am a demo companion, not care.',
   CARE:
     'Noted for your care-plan journal (browser-only). Do not change prescribed regimens based on this chat. Flag side effects to your clinician.',
   PATTERN:
-    'Any pattern I suggest is a hypothesis only — not a diagnosis. Does sleep, stress, or activity seem to line up with what you notice?',
+    'Any pattern I suggest is a hypothesis only - not a diagnosis. Does sleep, stress, or activity seem to line up with what you notice?',
   RECOVERY:
     'Recovery check-ins here are educational. If symptoms worsen, contact your clinician or urgent care. What milestone feels most relevant today?',
 };

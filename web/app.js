@@ -1,4 +1,4 @@
-/* Cadence — patient journey + consent share + clinician demo */
+/* Cadence - patient journey + consent share + clinician demo */
 
 const html = document.documentElement;
 const themeToggle = document.getElementById('theme-toggle');
@@ -71,7 +71,7 @@ var stageReplies = {
   TRIAGE: ['Logged as a symptom event. Severity 1–10? Any triggers?', 'Stored on your timeline. Seek urgent care for sudden severe symptoms.'],
   VISIT_PREP: ['Visit prep notes saved. Lead with what changed, then top questions.', 'Brief ingredients updated from this session.'],
   CARE: ['Care note saved without judgment.', 'Adherence / side-effect note stored for your clinician packet.'],
-  PATTERN: ['Hypothesis only — patterns need your confirmation.', 'Possible cluster noted; not a diagnosis.'],
+  PATTERN: ['Hypothesis only - patterns need your confirmation.', 'Possible cluster noted; not a diagnosis.'],
   RECOVERY: ['Milestone noted. Recovery is stepwise.', 'Logged. Worsening → Triage + clinician.']
 };
 
@@ -297,17 +297,17 @@ function formatBrief(packet) {
 
 function formatNote(packet) {
   var lines = [
-    '# Note Draft (AI-assisted — not signed)',
+    '# Note Draft (AI-assisted - not signed)',
     'Source code: ' + packet.code,
     '',
-    '## S — Subjective'
+    '## S - Subjective'
   ];
   var sub = (packet.timeline || []).slice(0, 12);
   if (sub.length) sub.forEach(function (t) { lines.push('- ' + (t.ts || '') + ': ' + (t.content || '')); });
   else lines.push('- (no timeline in packet)');
-  lines.push('', '## O — Objective', '- (none — do not invent vitals/labs/exam)');
-  lines.push('', '## A — Assessment', '- (clinician to complete — hypotheses only if present)');
-  lines.push('', '## P — Plan', '- (clinician to complete)');
+  lines.push('', '## O - Objective', '- (none - do not invent vitals/labs/exam)');
+  lines.push('', '## A - Assessment', '- (clinician to complete - hypotheses only if present)');
+  lines.push('', '## P - Plan', '- (clinician to complete)');
   lines.push('', '---', 'Disclaimer: Draft from patient-authorized demo packet only. Review, edit, and sign in your own system.');
   return lines.join('\n');
 }

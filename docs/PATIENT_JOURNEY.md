@@ -1,4 +1,4 @@
-# Cadence — Patient Journey Spec
+# Cadence - Patient Journey Spec
 
 Goal: one continuous companion from first wellness signal → active care → recovery.
 Retention + demo wow live here first. Clinician portal comes later on the same memory.
