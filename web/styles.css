@@ -7,17 +7,21 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* ===== Water-drop button press ===== */
 .water-btn {
   position: relative;
   overflow: hidden;
+  max-width: 100%;
   transform: translateZ(0);
   transition: transform 0.35s var(--water-ease),
               box-shadow 0.35s var(--smooth),
